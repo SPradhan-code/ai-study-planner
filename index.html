@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Based Study Planner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+      min-height: 100vh;
+      padding: 20px;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .header {
+      background: linear-gradient(90deg, #4a00e0, #8e2de2);
+      color: white;
+      padding: 25px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 15px;
+      opacity: 0.95;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-bottom: 15px;
+      color: #4a00e0;
+      font-size: 22px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .subject-box {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fafafa;
+    }
+
+    .subject-box h4 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .subject-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      background: #4a00e0;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #3700b3;
+    }
+
+    .full-btn {
+      width: 100%;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .stat-box {
+      background: #f8f9ff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-box h3 {
+      color: #4a00e0;
+      margin-bottom: 6px;
+    }
+
+    .stat-box p {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .item {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: #fcfcff;
+    }
+
+    .item strong {
+      color: #4a00e0;
+    }
+
+    .highlight {
+      background: #ede7f6;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      color: #4a00e0;
+      font-weight: bold;
+    }
+
+    .progress-container {
+      margin-top: 15px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      background: #ddd;
+      border-radius: 20px;
+      overflow: hidden;
+      height: 20px;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4a00e0, #8e2de2);
+      transition: width 0.5s ease;
+    }
+
+    .small {
+      color: #666;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .subject-controls {
+        grid-template-columns: 1fr;
+      }
+    }
+    .ai-section {
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  background: #f8f9ff;
+  border-left: 5px solid #4a00e0;
+}
+
+.ai-section h3 {
+  margin-bottom: 8px;
+  color: #4a00e0;
+}
+
+.ai-item {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+}
+
+.loader {
+  text-align: center;
+  font-weight: bold;
+  color: #4a00e0;
+  padding: 20px;
+}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>AI-Based Study Planner</h1>
+      <p>Smart Personalized Study Schedule Generator for Students</p>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT SIDE -->
+      <div>
+        <div class="card">
+          <h2>Student Input Form</h2>
+
+          <div class="form-group">
+            <label>Student Name</label>
+            <input type="text" id="studentName" value="Ani">
+          </div>
+
+          <div class="form-group">
+            <label>Exam Name</label>
+            <input type="text" id="examName" value="GATE CSE">
+          </div>
+
+          <div class="form-group">
+            <label>Daily Study Hours</label>
+            <input type="number" id="dailyHours" value="5" min="1" max="12">
+          </div>
+
+          <div class="form-group">
+            <label>Exam Date</label>
+            <input type="date" id="examDate">
+          </div>
+
+          <div class="form-group">
+            <label>Preferred Study Time</label>
+            <select id="preferredTime">
+              <option>Morning</option>
+              <option>Afternoon</option>
+              <option selected>Evening</option>
+            </select>
+          </div>
+
+          <h2 style="margin-top:20px;">Subjects</h2>
+
+          <div class="subject-box">
+            <h4>DSA</h4>
+            <div class="subject-controls">
+              <select id="dsaDifficulty">
+                <option>Easy</option>
+                <option>Medium</option>
+                <option selected>Hard</option>
+              </select>
+              <select id="dsaWeak">
+                <option>Strong</option>
+                <option selected>Weak</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="subject-box">
+            <h4>DBMS</h4>
+            <div class="subject-controls">
+              <select id="dbmsDifficulty">
+                <option>Easy</option>
+                <option>Medium</option>
+                <option selected>Hard</option>
+              </select>
+              <select id="dbmsWeak">
+                <option>Strong</option>
+                <option selected>Weak</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="subject-box">
+            <h4>Operating Systems</h4>
+            <div class="subject-controls">
+              <select id="osDifficulty">
+                <option>Easy</option>
+                <option selected>Medium</option>
+                <option>Hard</option>
+              </select>
+              <select id="osWeak">
+                <option selected>Strong</option>
+                <option>Weak</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="subject-box">
+            <h4>Computer Networks</h4>
+            <div class="subject-controls">
+              <select id="cnDifficulty">
+                <option>Easy</option>
+                <option selected>Medium</option>
+                <option>Hard</option>
+              </select>
+              <select id="cnWeak">
+                <option selected>Strong</option>
+                <option>Weak</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="full-btn" onclick="generatePlan()">Generate AI Study Plan</button>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div>
+        <div class="card">
+          <h2>AI Analysis Dashboard</h2>
+          <div class="stats">
+            <div class="stat-box">
+              <h3>Days Left</h3>
+              <p id="daysLeft">-</p>
+            </div>
+            <div class="stat-box">
+              <h3>Study Hours/Day</h3>
+              <p id="hoursDisplay">-</p>
+            </div>
+            <div class="stat-box">
+              <h3>Top Priority</h3>
+              <p id="topPriority">-</p>
+            </div>
+            <div class="stat-box">
+              <h3>Progress</h3>
+              <p id="progressPercent">-</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Priority Ranking</h2>
+          <div id="priorityRanking">
+            <p class="small">Click "Generate AI Study Plan" to see ranking.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Generated Daily Study Plan</h2>
+        <div id="dailyPlan">
+          <p class="small">Your daily plan will appear here.</p>
+        </div>
+        <div class="highlight">
+          AI Logic: Priority Score = Difficulty + Weakness + Exam Urgency
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Weekly Plan + Revision</h2>
+        <div id="weeklyPlan">
+          <p class="small">Your weekly plan will appear here.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Progress Tracker</h2>
+      <p><strong id="studentDisplay">Student</strong>'s preparation for <strong id="examDisplay">Exam</strong></p>
+      <p class="small">Dynamic progress estimation for prototype demo</p>
+
+      <div class="progress-container">
+        <p><strong>Overall Completion</strong></p>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="stats" style="margin-top:15px;">
+        <div class="stat-box">
+          <h3>Completed Topics</h3>
+          <p id="completedTopics">-</p>
+        </div>
+        <div class="stat-box">
+          <h3>Next Revision</h3>
+          <p id="nextRevision">-</p>
+        </div>
+        <div class="stat-box">
+          <h3>Mock Test</h3>
+          <p>Thursday</p>
+        </div>
+        <div class="stat-box">
+          <h3>Focus Time</h3>
+          <p id="focusTime">-</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Set default exam date (120 days from today)
+    async function generateAIPlan() {
+  const studentName = document.getElementById("studentName").value;
+  const examName = document.getElementById("examName").value;
+  const dailyHours = document.getElementById("dailyHours").value;
+  const examDate = document.getElementById("examDate").value;
+  const preferredTime = document.getElementById("preferredTime").value;
+
+  const subjects = [
+    { name: "DSA", difficulty: dsaDifficulty.value, weak: dsaWeak.value },
+    { name: "DBMS", difficulty: dbmsDifficulty.value, weak: dbmsWeak.value },
+    { name: "Operating Systems", difficulty: osDifficulty.value, weak: osWeak.value },
+    { name: "Computer Networks", difficulty: cnDifficulty.value, weak: cnWeak.value }
+  ];
+
+  const prompt = `
+Create a personalized study plan:
+
+Student: ${studentName}
+Exam: ${examName}
+Daily Hours: ${dailyHours}
+Exam Date: ${examDate}
+Preferred Time: ${preferredTime}
+
+Subjects:
+${subjects.map(s => `${s.name} - ${s.difficulty} - ${s.weak}`).join("\n")}
+
+Give:
+1. Priority Ranking
+2. Daily Plan
+3. Weekly Plan
+4. Tips
+`;
+
+  try {
+    let res = await fetch("http://localhost:3000/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: prompt })
+    });
+
+    let data = await res.json();
+    let reply = data.choices[0].message.content;
+
+    document.getElementById("dailyPlan").innerHTML =
+      "<pre>" + reply + "</pre>";
+
+  } catch (err) {
+    alert("Error connecting backend");
+    console.error(err);
+  }
+}
+    window.onload = function() {
+      let today = new Date();
+      today.setDate(today.getDate() + 120);
+      document.getElementById("examDate").value = today.toISOString().split("T")[0];
+      generatePlan();
+    };
+
+    function generatePlan() {
+      const studentName = document.getElementById("studentName").value || "Student";
+      const examName = document.getElementById("examName").value || "Exam";
+      const dailyHours = parseInt(document.getElementById("dailyHours").value) || 5;
+      const examDate = document.getElementById("examDate").value;
+      const preferredTime = document.getElementById("preferredTime").value;
+
+      const subjects = [
+        {
+          name: "DSA",
+          difficulty: document.getElementById("dsaDifficulty").value,
+          weak: document.getElementById("dsaWeak").value === "Weak"
+        },
+        {
+          name: "DBMS",
+          difficulty: document.getElementById("dbmsDifficulty").value,
+          weak: document.getElementById("dbmsWeak").value === "Weak"
+        },
+        {
+          name: "Operating Systems",
+          difficulty: document.getElementById("osDifficulty").value,
+          weak: document.getElementById("osWeak").value === "Weak"
+        },
+        {
+          name: "Computer Networks",
+          difficulty: document.getElementById("cnDifficulty").value,
+          weak: document.getElementById("cnWeak").value === "Weak"
+        }
+      ];
+
+      const daysLeft = calculateDaysLeft(examDate);
+      const urgencyBonus = getUrgencyBonus(daysLeft);
+
+      const difficultyMap = {
+        Easy: 1,
+        Medium: 2,
+        Hard: 3
+      };
+
+      // Calculate score
+      let rankedSubjects = subjects.map(subject => {
+        let score = difficultyMap[subject.difficulty] + (subject.weak ? 2 : 0) + urgencyBonus;
+        return { ...subject, score };
+      });
+
+      // Sort by score descending
+      rankedSubjects.sort((a, b) => b.score - a.score);
+
+      // Total score
+      let totalScore = rankedSubjects.reduce((sum, s) => sum + s.score, 0);
+
+      // Generate time allocation
+      let totalMinutes = dailyHours * 60;
+      let dailyPlan = [];
+      let currentMinutes = getStartMinutes(preferredTime);
+
+      rankedSubjects.forEach(subject => {
+        let allocated = Math.max(30, Math.round((subject.score / totalScore) * totalMinutes));
+        let start = formatTime(currentMinutes);
+        let end = formatTime(currentMinutes + allocated);
+        currentMinutes += allocated;
+
+        dailyPlan.push({
+          name: subject.name,
+          score: subject.score,
+          allocated,
+          timeSlot: start + " - " + end
+        });
+      });
+
+      // Progress estimation
+      let progress = Math.min(85, Math.max(20, Math.round((120 - Math.min(daysLeft, 120)) * 0.5 + 25)));
+
+      // Update Dashboard
+      document.getElementById("daysLeft").innerText = daysLeft;
+      document.getElementById("hoursDisplay").innerText = dailyHours + " hrs";
+      document.getElementById("topPriority").innerText = rankedSubjects[0].name;
+      document.getElementById("progressPercent").innerText = progress + "%";
+
+      // Priority Ranking
+      let rankingHTML = "";
+      rankedSubjects.forEach((subject, index) => {
+        rankingHTML += `
+          <div class="item">
+            <strong>#${index + 1} ${subject.name}</strong><br>
+            Difficulty: ${subject.difficulty} | ${subject.weak ? "Weak Area" : "Strong Area"} | Score: ${subject.score}
+          </div>
+        `;
+      });
+      document.getElementById("priorityRanking").innerHTML = rankingHTML;
+
+      // Daily Plan
+      let dailyHTML = "";
+      dailyPlan.forEach(item => {
+        dailyHTML += `
+          <div class="item">
+            <strong>${item.name}</strong><br>
+            Time: ${item.timeSlot}<br>
+            Allocated: ${item.allocated} minutes
+          </div>
+        `;
+      });
+      document.getElementById("dailyPlan").innerHTML = dailyHTML;
+
+      // Weekly Plan
+      const weeklyPlan = [
+        { day: "Monday", task: `${rankedSubjects[0].name} + ${rankedSubjects[1].name}` },
+        { day: "Tuesday", task: `${rankedSubjects[1].name} + ${rankedSubjects[2].name}` },
+        { day: "Wednesday", task: `${rankedSubjects[0].name} + ${rankedSubjects[3].name}` },
+        { day: "Thursday", task: `Mock Test + Analysis` },
+        { day: "Friday", task: `${rankedSubjects[2].name} + Revision` },
+        { day: "Saturday", task: `${rankedSubjects[3].name} + Practice Questions` },
+        { day: "Sunday", task: `Full Revision + Progress Review` }
+      ];
+
+      let weeklyHTML = "";
+      weeklyPlan.forEach(item => {
+        weeklyHTML += `
+          <div class="item">
+            <strong>${item.day}</strong><br>
+            ${item.task}
+          </div>
+        `;
+      });
+      document.getElementById("weeklyPlan").innerHTML = weeklyHTML;
+
+      // Progress Tracker
+      document.getElementById("studentDisplay").innerText = studentName;
+      document.getElementById("examDisplay").innerText = examName;
+      document.getElementById("progressFill").style.width = progress + "%";
+      document.getElementById("completedTopics").innerText = Math.round(progress / 2) + "/50";
+      document.getElementById("nextRevision").innerText = rankedSubjects[0].name;
+      document.getElementById("focusTime").innerText = preferredTime;
+    }
+
+    function calculateDaysLeft(examDate) {
+      let today = new Date();
+      let exam = new Date(examDate);
+      let diff = Math.ceil((exam - today) / (1000 * 60 * 60 * 24));
+      return diff > 0 ? diff : 0;
+    }
+
+    function getUrgencyBonus(daysLeft) {
+      if (daysLeft <= 30) return 3;
+      if (daysLeft <= 60) return 2;
+      if (daysLeft <= 120) return 1;
+      return 0;
+    }
+
+    function getStartMinutes(preferredTime) {
+      if (preferredTime === "Morning") return 6 * 60;      // 6:00 AM
+      if (preferredTime === "Afternoon") return 2 * 60 + 0; // 2:00 PM
+      return 6 * 60 + 12 * 60; // 6:00 PM
+    }
+
+    function formatTime(totalMinutes) {
+      let hours = Math.floor(totalMinutes / 60);
+      let minutes = totalMinutes % 60;
+      let ampm = hours >= 12 ? "PM" : "AM";
+      let displayHour = hours % 12;
+      if (displayHour === 0) displayHour = 12;
+      return displayHour + ":" + (minutes < 10 ? "0" + minutes : minutes) + " " + ampm;
+    }
+  </script>
+
+</body>
+</html>
