@@ -1,2 +1,1 @@
-# ai-study-planner
-AI-powered study planner with smart scheduling, task tracking, and a modern app-like UI.
+Full-stack AI study planner with smart scheduling and task tracking, built with a Node.js backend and a single-page HTML/JS UI.
